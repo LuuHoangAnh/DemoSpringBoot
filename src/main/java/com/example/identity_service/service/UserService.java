@@ -2,31 +2,34 @@ package com.example.identity_service.service;
 
 import com.example.identity_service.dto.request.UserCreationRequest;
 import com.example.identity_service.dto.request.UserUpdateRequest;
+import com.example.identity_service.dto.request.response.UserResponse;
 import com.example.identity_service.entity.User;
 import com.example.identity_service.exception.AppException;
 import com.example.identity_service.exception.ErrorCode;
+import com.example.identity_service.mapper.UserMapper;
 import com.example.identity_service.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+//tao constructor cho tat ca cac biet duoc dat la final va se inject cac dependency vao
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+//su dung lombok ho tro constructor de inject cac bean nay thay vi su dung @Autowired de inject cac dependency vao
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
-
+    UserRepository userRepository;
+    UserMapper userMapper;
     public User createUser(UserCreationRequest request){
-        User user = new User();
-
         if (userRepository.existsByUsername(request.getUsername()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
+        User user = userMapper.toUser(request);
+        //su dung mapstruct de map cac filed cung ten vao voi nhau
+        //su dung de map cac field cua request vao user thay vi moi lan goi user.setUsername(request.getUsername())
 
         return userRepository.save(user);
     }
@@ -35,19 +38,18 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User getUser(String id){
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    public UserResponse getUser(String id){
+        return userMapper.toUserResponse(userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found")));
     }
 
-    public User updateUser(String userId, UserUpdateRequest request){
-        User user = getUser(userId);
+    public UserResponse updateUser(String userId, UserUpdateRequest request){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
+        userMapper.updateUser(user, request);
 
-        return userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     public void deleteUser(String userId){
