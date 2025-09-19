@@ -11,6 +11,8 @@ import com.example.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +32,10 @@ public class UserService {
         User user = userMapper.toUser(request);
         //su dung mapstruct de map cac filed cung ten vao voi nhau
         //su dung de map cac field cua request vao user thay vi moi lan goi user.setUsername(request.getUsername())
+
+        //ma hoa mat khau, 10 la chi so mac dinh, so cang cao do phuc tap cua chuoi ma hoa cang cao
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         return userRepository.save(user);
     }
