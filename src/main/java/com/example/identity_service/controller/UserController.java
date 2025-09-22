@@ -56,18 +56,31 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/myInfo")
+    ApiResponse<UserResponse> getMyInfo(){
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
+                .build();
+    }
+
     @PutMapping("/{userId}")
     ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request){
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUser(userId, request))
                 .build();
     }
-
+    /*
     @DeleteMapping("/{userId}")
     ApiResponse<String> deleteUser(@PathVariable String userID){
         userService.deleteUser(userID);
         return ApiResponse.<String>builder()
                 .result("User has been deleted")
                 .build();
+    }*/
+
+    @DeleteMapping("/{userId}")
+    String deleteUser(@PathVariable String userId){
+        userService.deleteUser(userId);
+        return "User has been deleted";
     }
 }
