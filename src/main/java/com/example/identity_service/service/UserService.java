@@ -8,6 +8,7 @@ import com.example.identity_service.enums.Role;
 import com.example.identity_service.exception.AppException;
 import com.example.identity_service.exception.ErrorCode;
 import com.example.identity_service.mapper.UserMapper;
+import com.example.identity_service.repository.RoleRepository;
 import com.example.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import java.util.Optional;
 @Slf4j
 public class UserService {
     UserRepository userRepository;
+    RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     public UserResponse createUser(UserCreationRequest request){
@@ -47,13 +49,14 @@ public class UserService {
 
         HashSet<String> roles = new HashSet<>();
         roles.add(Role.USER.name());
-        user.setRoles(roles);
+        //user.setRoles(roles);
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     //kiem tra truoc khi vao method con @PostAuthorize() thi vao ham truoc roi kiem tra role
+    //@PreAuthorize("hasAuthority('APPROVE_POST')") dung neu khong kiem tra theo Role (phan quyen theo muc permission)
     public List<UserResponse> getUsers(){
         log.info("In method get Users");
         return userRepository.findAll().stream()
@@ -71,6 +74,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         userMapper.updateUser(user, request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
 
         return userMapper.toUserResponse(userRepository.save(user));
     }

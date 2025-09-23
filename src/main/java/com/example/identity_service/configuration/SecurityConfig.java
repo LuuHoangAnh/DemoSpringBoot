@@ -37,7 +37,6 @@ public class SecurityConfig {
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated());
         //verify token
-        //trong truong hop lau khong vao token het han thi cmt dong nay roi mo lai de khac phuc loi 401
         //dki 1 provider manager, authentication provider de support cho jwt token
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
@@ -56,7 +55,7 @@ public class SecurityConfig {
     JwtAuthenticationConverter jwtAuthenticationConverter(){
         //customize lai AuthorityPrefix khi convert ve thay vi dung SCOPE_ADMIN thi dung ROLE_ADMIN
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
